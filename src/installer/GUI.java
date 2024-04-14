@@ -1,11 +1,13 @@
 package installer;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.io.IOException;  // Add this import
+import java.io.IOException; // Add this import
 import java.net.URL;
 
 public class GUI implements ActionListener {
@@ -15,13 +17,16 @@ public class GUI implements ActionListener {
     public JComboBox<String> minecraftVersionDropdown;
     public JComboBox<String> clientVersionDropdown;
     public JTextField minecraftPathTextField;
+    public JTextField javaPathTextField;
     public JButton installButton;
     public JLabel statusLabel;
     public JProgressBar progressBar;
+    public JCheckBox addLauncherProfileCheckbox; // Add this line
     private Client client;
 
     public GUI() {
         frame = new JFrame();
+        JFrame.setDefaultLookAndFeelDecorated(true);
         client = new Client(this);
 
         label = new JLabel("Morch Client installer");
@@ -49,6 +54,8 @@ public class GUI implements ActionListener {
 
         // Create JTextField for .minecraft path
         minecraftPathTextField = new JTextField(System.getenv("APPDATA") + "/.minecraft");
+        javaPathTextField = new JTextField("");
+        javaPathTextField.setEnabled(false); // Disable Java path text field by default
 
         // Create status label
         statusLabel = new JLabel(" ");
@@ -56,6 +63,13 @@ public class GUI implements ActionListener {
         // Create progress bar
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
+
+        // Create the checkbox
+        addLauncherProfileCheckbox = new JCheckBox("Add launcher profile");
+        addLauncherProfileCheckbox.addActionListener(e -> {
+            boolean selected = addLauncherProfileCheckbox.isSelected();
+            javaPathTextField.setEnabled(selected); // Enable/disable Java path text field based on checkbox state
+        });
 
         panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
@@ -70,10 +84,20 @@ public class GUI implements ActionListener {
         // Add client version dropdown to the panel
         panel.add(clientVersionDropdown);
 
+        
+
         // Add .minecraft path input to the panel
         panel.add(new JLabel("Path to .minecraft:"));
         panel.add(minecraftPathTextField);
+        // Add "Add launcher profile" checkbox to the panel
+        panel.add(addLauncherProfileCheckbox);
+        // Add Java path input to the panel
+        panel.add(new JLabel("Java path:"));
+        panel.add(javaPathTextField);
 
+        JPanel p =new JPanel();
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panel.add(p);
         panel.add(installButton);
 
         // Add progress bar to the panel
@@ -87,7 +111,7 @@ public class GUI implements ActionListener {
         // label
         panel.setMaximumSize(new Dimension(400, 300));
         panel.setMinimumSize(new Dimension(400, 300));
-        
+
         // Disable window resizing
         frame.setResizable(false);
 
@@ -96,6 +120,14 @@ public class GUI implements ActionListener {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        frame.setDefaultLookAndFeelDecorated(true);
+        try {
+			
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e1) {
+		} catch (InstantiationException e1) {
+		} catch (IllegalAccessException e1) {
+		} catch (UnsupportedLookAndFeelException e1) {}
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -103,12 +135,16 @@ public class GUI implements ActionListener {
             String selectedMinecraftVersion = (String) minecraftVersionDropdown.getSelectedItem();
             String selectedClientVersion = (String) clientVersionDropdown.getSelectedItem();
             String minecraftPath = minecraftPathTextField.getText();
+            String javaPath = javaPathTextField.getText();
+            boolean addLauncherProfile = addLauncherProfileCheckbox.isSelected(); // Get the state of the checkbox
 
             System.out.println("Selected Minecraft version: " + selectedMinecraftVersion);
             System.out.println("Selected Client version: " + selectedClientVersion);
             System.out.println("Path to .minecraft: " + minecraftPath);
+            System.out.println("Java path: " + javaPath);
+            System.out.println("Add launcher profile: " + addLauncherProfile); // Print the state of the checkbox
 
-            client.installClient(selectedClientVersion, selectedMinecraftVersion, minecraftPath);
+            client.installClient(selectedClientVersion, selectedMinecraftVersion, minecraftPath, javaPath, addLauncherProfile); // Pass the state of the checkbox
         }
     }
 
@@ -123,5 +159,5 @@ public class GUI implements ActionListener {
     public List<String> getMinecraftVersions() {
         return client.getMinecraftVersions();
     }
-    
+
 }
